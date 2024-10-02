@@ -1,4 +1,4 @@
-package ChessAI;
+package Chess_1VS1;
 
 public class Move {
     private final int sourceY;

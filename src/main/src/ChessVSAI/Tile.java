@@ -1,4 +1,4 @@
-package ChessAI;
+package ChessVSAI;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

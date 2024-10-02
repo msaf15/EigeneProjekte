@@ -1,42 +1,36 @@
-package ChessAI;
+package ChessVSAI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Knight extends Piece {
-    Knight(Team side) {
+public class Bishop extends Piece {
+    private final int[][] legalMoves = {
+            {1,-1}, {-1,-1},
+            {1,1}, {-1,1},
+    };
+    Bishop(Team side) {
         super(side);
     }
-    private final int[][] legalMoves = {
-            { 2,  1},
-            { 2, -1},
-            {-2,  1},
-            {-2, -1},
-            { 1,  2},
-            { 1, -2},
-            {-1,  2},
-            {-1, -2},
-    };
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/knight.png"));
+                return ImageIO.read(new File("src/main/resources/bishop.png"));
             else
-                return ImageIO.read(new File("src/main/resources/knight2.png"));
+                return ImageIO.read(new File("src/main/resources/bishop2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-
     @Override
     public Type getType() {
-        return Type.KNIGHT;
+        return Type.BISHOP;
     }
+
     @Override
     public int[][] getLegalMoves() {
         return legalMoves;

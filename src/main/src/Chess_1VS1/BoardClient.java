@@ -1,4 +1,4 @@
-package ChessAI;
+package Chess_1VS1;
 
 import javax.swing.*;
 import java.awt.*;
@@ -6,12 +6,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-public class Board extends JFrame {
+public class BoardClient extends JFrame {
     private final Tile[][] tiles = new Tile[8][8];
     private final ArrayList<Move> moveList = new ArrayList<>();
     private final int[][] gameState = new int[8][8];
-    Board() {
-        super("Chess");
+    BoardClient() {
+        super("Chess_1VS1");
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -179,7 +179,7 @@ public class Board extends JFrame {
         public boolean checkActivations() {
             for (Tile[] row : tiles)
                 for (Tile i : row)
-                    if (i.isClicked() && i.getPiece().getType() != ChessAI.Type.PIECE)
+                    if (i.isClicked() && i.getPiece().getType() != Chess_1VS1.Type.PIECE)
                         return true;
             return false;
         }
@@ -213,14 +213,14 @@ public class Board extends JFrame {
                 int targetY = sourceIndex[0] + legalMove[0];
                 int targetX = sourceIndex[1] + legalMove[1];
                 int[] targetArr = {targetY, targetX};
-                if (t.getType() == ChessAI.Type.PAWN) {
+                if (t.getType() == Chess_1VS1.Type.PAWN) {
                     if (legalMove[0] == -1 && legalMove[1] == 0 && checkIfAllyPiece(targetY,targetX) && ((Pawn)t).isStart())
                         friendly = true;
                     if (!validateMovesPawn(legalMove, targetY, targetX, friendly)) {
                         continue;
                     }
                 }
-                else if (t.getType() == ChessAI.Type.KNIGHT || t.getType() == ChessAI.Type.KING) {
+                else if (t.getType() == Chess_1VS1.Type.KNIGHT || t.getType() == Chess_1VS1.Type.KING) {
                     if (checkIfAllyPiece(targetY,targetX))
                         continue;
                 }
@@ -311,7 +311,7 @@ public class Board extends JFrame {
         }
 
         public void executeMove(Move move) {
-            if(move.getSourcePiece().getType() == ChessAI.Type.PAWN) {
+            if(move.getSourcePiece().getType() == Chess_1VS1.Type.PAWN) {
                 if (move.getDestY() == move.getSourceY() - 2) {
                     ((Pawn) move.getSourcePiece()).turnOffStart();
                 }

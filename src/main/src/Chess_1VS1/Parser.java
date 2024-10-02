@@ -1,4 +1,4 @@
-package ChessAI;
+package Chess_1VS1;
 
 import java.util.HashMap;
 import java.util.Map;
