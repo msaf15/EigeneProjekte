@@ -1,4 +1,4 @@
-package ChessV1;
+package ChessAI;
 
 public enum Type {
     PAWN,

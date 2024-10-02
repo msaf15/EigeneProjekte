@@ -1,27 +1,27 @@
-package ChessV1;
+package ChessAI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class King extends Piece {
+public class Rook extends Piece {
     private final int[][] legalMoves = {
-            {1,-1}, {-1,-1},
-            {1,1}, {-1,1},
-            {1,0}, {-1,0},
-            {0,1}, {0,-1},
+            {1,0},
+            {-1,0},
+            {0,1},
+            {0,-1},
     };
-    King(Team side) {
+    Rook(Team side) {
         super(side);
     }
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/king.png"));
+                return ImageIO.read(new File("src/main/resources/rook.png"));
             else
-                return ImageIO.read(new File("src/main/resources/king2.png"));
+                return ImageIO.read(new File("src/main/resources/rook2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -36,6 +36,6 @@ public class King extends Piece {
 
     @Override
     public Type getType() {
-        return Type.KING;
+        return Type.ROOK;
     }
 }

@@ -1,4 +1,4 @@
-package ChessV1;
+package ChessAI;
 
 public class Pair {
     private int x;

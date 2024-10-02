@@ -1,4 +1,4 @@
-package ChessV1;
+package ChessAI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

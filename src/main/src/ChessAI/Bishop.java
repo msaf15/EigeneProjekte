@@ -1,44 +1,38 @@
-package ChessV1;
+package ChessAI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Queen extends Piece{
+public class Bishop extends Piece {
     private final int[][] legalMoves = {
             {1,-1}, {-1,-1},
             {1,1}, {-1,1},
-            {1,0},
-            {-1,0},
-            {0,1},
-            {0,-1},
     };
-    Queen(Team side) {
+    Bishop(Team side) {
         super(side);
     }
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/queen.png"));
+                return ImageIO.read(new File("src/main/resources/bishop.png"));
             else
-                return ImageIO.read(new File("src/main/resources/queen2.png"));
+                return ImageIO.read(new File("src/main/resources/bishop2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
+    @Override
+    public Type getType() {
+        return Type.BISHOP;
+    }
 
     @Override
     public int[][] getLegalMoves() {
         return legalMoves;
     }
-
-    @Override
-    public Type getType() {
-        return Type.QUEEN;
-    }
-
 }

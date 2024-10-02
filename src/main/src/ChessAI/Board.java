@@ -1,4 +1,4 @@
-package ChessV1;
+package ChessAI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -179,7 +179,7 @@ public class Board extends JFrame {
         public boolean checkActivations() {
             for (Tile[] row : tiles)
                 for (Tile i : row)
-                    if (i.isClicked() && i.getPiece().getType() != ChessV1.Type.PIECE)
+                    if (i.isClicked() && i.getPiece().getType() != ChessAI.Type.PIECE)
                         return true;
             return false;
         }
@@ -213,14 +213,14 @@ public class Board extends JFrame {
                 int targetY = sourceIndex[0] + legalMove[0];
                 int targetX = sourceIndex[1] + legalMove[1];
                 int[] targetArr = {targetY, targetX};
-                if (t.getType() == ChessV1.Type.PAWN) {
+                if (t.getType() == ChessAI.Type.PAWN) {
                     if (legalMove[0] == -1 && legalMove[1] == 0 && checkIfAllyPiece(targetY,targetX) && ((Pawn)t).isStart())
                         friendly = true;
                     if (!validateMovesPawn(legalMove, targetY, targetX, friendly)) {
                         continue;
                     }
                 }
-                else if (t.getType() == ChessV1.Type.KNIGHT || t.getType() == ChessV1.Type.KING) {
+                else if (t.getType() == ChessAI.Type.KNIGHT || t.getType() == ChessAI.Type.KING) {
                     if (checkIfAllyPiece(targetY,targetX))
                         continue;
                 }
@@ -311,7 +311,7 @@ public class Board extends JFrame {
         }
 
         public void executeMove(Move move) {
-            if(move.getSourcePiece().getType() == ChessV1.Type.PAWN) {
+            if(move.getSourcePiece().getType() == ChessAI.Type.PAWN) {
                 if (move.getDestY() == move.getSourceY() - 2) {
                     ((Pawn) move.getSourcePiece()).turnOffStart();
                 }
