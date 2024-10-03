@@ -144,7 +144,6 @@ public class Board extends JFrame {
                 if (i.isClicked()) {
                     i.setClicked();
                     i.removeCircle();
-
                 }
             }
         }
@@ -178,7 +177,7 @@ public class Board extends JFrame {
                 if (checkIfAllyPiece(targetY,targetX))
                     continue;
             }
-            if (checkWithinBounds(targetArr))
+            if (Board.checkWithinBounds(targetArr))
                 processMove(targetArr, tile);
         }
     }
@@ -193,7 +192,7 @@ public class Board extends JFrame {
         boolean seenEnemyPiece = false;
         boolean seenFriendlyPiece = false;
         for (int[] legalMove : legalMoves) {
-            while (checkWithinBounds(targetY, targetX)) {
+            while (Board.checkWithinBounds(targetY, targetX)) {
                 targetY += legalMove[0];
                 targetX += legalMove[1];
                 int[] targetArr = {targetY, targetX};
@@ -201,7 +200,7 @@ public class Board extends JFrame {
                     seenFriendlyPiece = true;
                     continue;
                 }
-                if (checkWithinBounds(targetArr)) {
+                if (Board.checkWithinBounds(targetArr)) {
                     if (seenEnemyPiece || seenFriendlyPiece)
                         break;
                     if (tiles[targetY][targetX].getPiece().getSide() == Team.BLACK)
@@ -229,14 +228,14 @@ public class Board extends JFrame {
     }
 
     public boolean checkIfPieceOn(int targetY, int targetX) {
-        if (checkWithinBounds(targetY,targetX)) {
+        if (Board.checkWithinBounds(targetY,targetX)) {
             return tiles[targetY][targetX].isPieceOn();
         }
         return false;
     }
 
     public boolean checkIfAllyPiece(int targetY, int targetX) {
-        if (checkWithinBounds(targetY,targetX)) {
+        if (Board.checkWithinBounds(targetY,targetX)) {
             return tiles[targetY][targetX].isPieceOn() && tiles[targetY][targetX].getPiece().getSide() == Team.WHITE;
         }
         return false;
@@ -248,11 +247,11 @@ public class Board extends JFrame {
         destTile.setCanMoveto();
     }
 
-    public boolean checkWithinBounds(int[] source) {
+    public static boolean checkWithinBounds(int[] source) {
         return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
     }
 
-    public boolean checkWithinBounds(int y, int x) {
+    public static boolean checkWithinBounds(int y, int x) {
         return y < 8 && y >= 0 && x < 8 && x >= 0;
     }
 
@@ -302,10 +301,12 @@ public class Board extends JFrame {
                         showAvailableMovesIntervall(tile);
                         break;
                 }
-            } else if (sourceTile.isClicked()) {
+            }
+            else if (sourceTile.isClicked()) {
                 sourceTile.setMoveSource();
                 disableAllMoveIndicators();
-            } else if (isValidMoveTile(sourceTile)) {
+            }
+            else if (isValidMoveTile(sourceTile)) {
                 Move move = new Move(
                         getSourceIndex(tile.getOwner()),
                         tile.getOwner().getPiece(),
@@ -314,7 +315,8 @@ public class Board extends JFrame {
                         tiles
                 );
                 executeMove(move);
-            } else {
+            }
+            else {
                 disableAllActivations();
                 disableAllMoveIndicators();
             }

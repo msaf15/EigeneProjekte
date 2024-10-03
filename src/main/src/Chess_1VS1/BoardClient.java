@@ -147,7 +147,6 @@ public class BoardClient extends JFrame {
                 if (i.isClicked()) {
                     i.setClicked();
                     i.removeCircle();
-
                 }
             }
         }
@@ -196,15 +195,15 @@ public class BoardClient extends JFrame {
                 if (checkIfAllyPiece(targetY,targetX))
                     continue;
             }
-            if (checkWithinBounds(targetArr))
+            if (BoardClient.checkWithinBounds(targetArr))
                 processMove(targetArr, tile);
         }
     }
-    public boolean checkWithinBounds(int[] source) {
+    public static boolean checkWithinBounds(int[] source) {
         return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
     }
 
-    public boolean checkWithinBounds(int y, int x) {
+    public static boolean checkWithinBounds(int y, int x) {
         return y < 8 && y >= 0 && x < 8 && x >= 0;
     }
 
@@ -218,7 +217,7 @@ public class BoardClient extends JFrame {
         boolean seenEnemyPiece = false;
         boolean seenFriendlyPiece = false;
         for (int[] legalMove : legalMoves) {
-            while (checkWithinBounds(targetY, targetX)) {
+            while (BoardClient.checkWithinBounds(targetY, targetX)) {
                 targetY += legalMove[0];
                 targetX += legalMove[1];
                 int[] targetArr = {targetY, targetX};
@@ -226,7 +225,7 @@ public class BoardClient extends JFrame {
                     seenFriendlyPiece = true;
                     continue;
                 }
-                if (checkWithinBounds(targetArr)) {
+                if (BoardClient.checkWithinBounds(targetArr)) {
                     if (seenEnemyPiece || seenFriendlyPiece)
                         break;
                     if (tiles[targetY][targetX].getPiece().getSide() == Team.BLACK)
@@ -254,14 +253,13 @@ public class BoardClient extends JFrame {
     }
 
     public boolean checkIfPieceOn(int targetY, int targetX) {
-        if (checkWithinBounds(targetY,targetX)) {
+        if (BoardClient.checkWithinBounds(targetY,targetX))
             return tiles[targetY][targetX].isPieceOn();
-        }
         return false;
     }
 
     public boolean checkIfAllyPiece(int targetY, int targetX) {
-        if (checkWithinBounds(targetY,targetX)) {
+        if (BoardClient.checkWithinBounds(targetY,targetX)) {
             return tiles[targetY][targetX].isPieceOn() && tiles[targetY][targetX].getPiece().getSide() == Team.WHITE;
         }
         return false;
