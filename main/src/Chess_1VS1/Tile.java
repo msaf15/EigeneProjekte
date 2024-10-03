@@ -40,8 +40,8 @@ public class Tile extends JPanel {
         owner = null;
         rePaint();
     }
-    public void setMoveSource() {
-        if (piece.getType() != Type.PIECE && !clicked && piece.getSide() == Team.WHITE) {
+    public void setMoveSource(Team team) {
+        if (piece.getType() != Type.PIECE && !clicked && piece.getSide() == team) {
             try {
                 canMoveto = ImageIO.read(new File("main/resources/greencircle.png"));
                 rePaint();

@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class BoardClient extends JFrame {
     private final Tile[][] tiles = new Tile[8][8];
@@ -18,18 +19,24 @@ public class BoardClient extends JFrame {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    BoardClient() {
+    private final Team team;
+    private final Team enemyTeam;
+    BoardClient(Team team) {
         super("Chess_1VS1");
-        System.out.println("a");
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new GridLayout(8, 8));
         this.setResizable(false);
+        this.team = team;
+        if (team == Team.WHITE)
+            enemyTeam = Team.BLACK;
+        else
+            enemyTeam = Team.WHITE;
         try {
             socket = new Socket("localhost", 6000);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream());
+            out = new PrintWriter(socket.getOutputStream(), true);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -56,12 +63,13 @@ public class BoardClient extends JFrame {
     }
 
     public void setUpGame() {
-        setUpBlackSide();
-        setUpWhiteSide();
+        setUpBottomSide();
+        setUpTopSide();
         updateGameState();
+        receiveCommands();
     }
 
-    private void setUpBlackSide() {
+    private void setUpTopSide() {
         boolean pawns = false;
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 8; j++) {
@@ -69,31 +77,53 @@ public class BoardClient extends JFrame {
                     switch (j) {
                         case 0:
                         case 7:
-                            tiles[i][j].updateTile(new Rook(Team.BLACK));
+                            tiles[i][j].updateTile(new Rook(enemyTeam));
                             break;
                         case 1:
                         case 6:
-                            tiles[i][j].updateTile(new Knight(Team.BLACK));
+                            tiles[i][j].updateTile(new Knight(enemyTeam));
                             break;
                         case 2:
                         case 5:
-                            tiles[i][j].updateTile(new Bishop(Team.BLACK));
+                            tiles[i][j].updateTile(new Bishop(enemyTeam));
                             break;
                         case 3:
-                            tiles[i][j].updateTile(new Queen(Team.BLACK));
+                            tiles[i][j].updateTile(new Queen(enemyTeam));
                             break;
                         case 4:
-                            tiles[i][j].updateTile(new King(Team.BLACK));
+                            tiles[i][j].updateTile(new King(enemyTeam));
                     }
-                } else {
-                    tiles[i][j].updateTile(new Pawn(Team.BLACK));
+                }
+                else {
+                    tiles[i][j].updateTile(new Pawn(enemyTeam));
                 }
             }
             pawns = true;
         }
     }
 
-    private void setUpWhiteSide() {
+    public void receiveCommands() {
+        Thread thread = new Thread(() -> {
+            try {
+                String ans;
+                while ((ans = in.readLine()) != null) {
+                    String source = ans.substring(0,2);
+                    String dest = ans.substring(6,8);
+                    executeMove(source,dest);
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+    }
+
+    public void sendCommand(String source, String destination) {
+        out.println(Parser.invertCords(source) + " to " + Parser.invertCords(destination));
+    }
+
+    private void setUpBottomSide() {
         boolean pawns = true;
         for (int i = 6; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -101,24 +131,24 @@ public class BoardClient extends JFrame {
                     switch (j) {
                         case 0:
                         case 7:
-                            tiles[i][j].updateTile(new Rook(Team.WHITE));
+                            tiles[i][j].updateTile(new Rook(team));
                             break;
                         case 1:
                         case 6:
-                            tiles[i][j].updateTile(new Knight(Team.WHITE));
+                            tiles[i][j].updateTile(new Knight(team));
                             break;
                         case 2:
                         case 5:
-                            tiles[i][j].updateTile(new Bishop(Team.WHITE));
+                            tiles[i][j].updateTile(new Bishop(team));
                             break;
                         case 3:
-                            tiles[i][j].updateTile(new Queen(Team.WHITE));
+                            tiles[i][j].updateTile(new Queen(team));
                             break;
                         case 4:
-                            tiles[i][j].updateTile(new King(Team.WHITE));
+                            tiles[i][j].updateTile(new King(team));
                     }
                 } else {
-                    tiles[i][j].updateTile(new Pawn(Team.WHITE));
+                    tiles[i][j].updateTile(new Pawn(team));
                 }
             }
             pawns = false;
@@ -155,7 +185,7 @@ public class BoardClient extends JFrame {
     private boolean isValidMoveTile(Tile tile) {
         Piece piece = tile.getPiece();
         boolean b1 = piece.isDead() && tile.isMoveablePosition();
-        boolean b2 = !piece.isDead() && tile.isMoveablePosition() && piece.getSide() == Team.BLACK;
+        boolean b2 = !piece.isDead() && tile.isMoveablePosition() && piece.getSide() == enemyTeam;
         return (b1 || b2);
     }
 
@@ -170,7 +200,7 @@ public class BoardClient extends JFrame {
     public void disableAllMoveIndicators() {
         for (Tile[] row : tiles)
             for (Tile i : row)
-                if (i.getPiece().isDead() || i.getPiece().getSide() == Team.BLACK)
+                if (i.getPiece().isDead() || i.getPiece().getSide() == enemyTeam)
                     i.removeCircle();
     }
 
@@ -228,7 +258,7 @@ public class BoardClient extends JFrame {
                 if (BoardClient.checkWithinBounds(targetArr)) {
                     if (seenEnemyPiece || seenFriendlyPiece)
                         break;
-                    if (tiles[targetY][targetX].getPiece().getSide() == Team.BLACK)
+                    if (tiles[targetY][targetX].getPiece().getSide() == enemyTeam)
                         seenEnemyPiece = true;
                     processMove(targetArr, tile);
                 }
@@ -260,7 +290,7 @@ public class BoardClient extends JFrame {
 
     public boolean checkIfAllyPiece(int targetY, int targetX) {
         if (BoardClient.checkWithinBounds(targetY,targetX)) {
-            return tiles[targetY][targetX].isPieceOn() && tiles[targetY][targetX].getPiece().getSide() == Team.WHITE;
+            return tiles[targetY][targetX].isPieceOn() && tiles[targetY][targetX].getPiece().getSide() == team;
         }
         return false;
     }
@@ -279,6 +309,11 @@ public class BoardClient extends JFrame {
         return new int[]{};
     }
 
+    public String getSourceCords(Tile tile) {
+        int[] arr = getSourceIndex(tile);
+        return Parser.fromIndextoCord(arr);
+    }
+
     public void executeMove(Move move) {
         if(move.getSourcePiece().getType() == Chess_1VS1.Type.PAWN) {
             if (move.getDestY() == move.getSourceY() - 2) {
@@ -290,6 +325,17 @@ public class BoardClient extends JFrame {
         }
         tiles[move.getDestY()][move.getDestX()].updateTile(move.getSourcePiece());
         tiles[move.getSourceY()][move.getSourceX()].removePiece();
+        System.out.println(getSourceCords(tiles[move.getSourceY()][move.getSourceX()]) + " to " + getSourceCords(tiles[move.getDestY()][move.getDestX()]));
+        sendCommand(getSourceCords(tiles[move.getSourceY()][move.getSourceX()]), getSourceCords(tiles[move.getDestY()][move.getDestX()]));
+        disableAllMoveIndicators();
+    }
+
+    public void executeMove(String source, String dest) {
+        int[] sourceIndex = Parser.fromCordToIndex(source);
+        int[] destIndex = Parser.fromCordToIndex(dest);
+        Piece sourcePiece = tiles[sourceIndex[0]][sourceIndex[1]].getPiece();
+        tiles[sourceIndex[0]][sourceIndex[1]].removePiece();
+        tiles[destIndex[0]][destIndex[1]].updateTile(sourcePiece);
         disableAllMoveIndicators();
     }
 
@@ -297,19 +343,18 @@ public class BoardClient extends JFrame {
         private final Tile tile;
 
         TileMouseListener(Tile tile) {
-            System.out.println("b");
             this.tile = tile;
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
             Tile sourceTile = (Tile) e.getSource();
-            if (!sourceTile.getPiece().isDead() && sourceTile.getPiece().getSide() == Team.WHITE && !sourceTile.isClicked()) {
+            if (!sourceTile.getPiece().isDead() && sourceTile.getPiece().getSide() == team && !sourceTile.isClicked()) {
                 if (checkActivations()) {
                     disableAllActivations();
                     disableAllMoveIndicators();
                 }
-                sourceTile.setMoveSource();
+                sourceTile.setMoveSource(team);
                 switch (sourceTile.getPiece().getType()) {
                     case PAWN, KNIGHT, KING:
                         showAvailableMoves(tile);
@@ -320,16 +365,14 @@ public class BoardClient extends JFrame {
                 }
             }
             else if(sourceTile.isClicked()) {
-                sourceTile.setMoveSource();
+                sourceTile.setMoveSource(team);
                 disableAllMoveIndicators();
             }
             else if (isValidMoveTile(sourceTile)) {
                 Move move = new Move(
                         getSourceIndex(tile.getOwner()),
                         tile.getOwner().getPiece(),
-                        getSourceIndex(tile),
-                        tile.getPiece(),
-                        tiles
+                        getSourceIndex(tile)
                 );
                 executeMove(move);
             }

@@ -8,18 +8,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ClientHandler extends Thread {
-    private Socket socket;
     private Server server;
-    private int id;
     private BufferedReader in;
     private PrintWriter out;
-    ClientHandler(Socket socket, Server server, int id) {
+    ClientHandler(Socket socket, Server server) {
         try {
-            this.socket = socket;
             this.server = server;
-            this.id = id;
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.out = new PrintWriter(socket.getOutputStream());
+            this.out = new PrintWriter(socket.getOutputStream(), true);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -30,7 +26,7 @@ public class ClientHandler extends Thread {
         try {
             String ans;
             while ((ans = in.readLine()) != null) {
-                System.out.println(ans);
+                server.singleCast(ans,this);
             }
         }
         catch (IOException e) {

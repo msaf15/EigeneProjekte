@@ -11,19 +11,16 @@ import java.util.List;
 
 public class Server {
     private ServerSocket serverSocket;
-    private int port;
     private List<ClientHandler> clientHandlerList;
     public Server(int port) {
-        this.port = port;
         clientHandlerList = new ArrayList<>();
         try {
-            int num = 0;
             serverSocket = new ServerSocket(port);
             System.out.println("Server running");
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected");
-                ClientHandler clientHandler = new ClientHandler(socket, this,num++);
+                ClientHandler clientHandler = new ClientHandler(socket, this);
                 clientHandlerList.add(clientHandler);
                 clientHandler.start();
             }
@@ -32,8 +29,11 @@ public class Server {
             e.printStackTrace();
         }
     }
-    public void singleCast(int id, String command) {
-        clientHandlerList.get(id).sendMessage(command);
+    public void singleCast(String command, ClientHandler clientHandler) {
+        for (ClientHandler ch : clientHandlerList) {
+            if (!(ch == clientHandler))
+                ch.sendMessage(command);
+        }
     }
 
     public static void main(String[] args) {
