@@ -1,4 +1,4 @@
-package ChessVSAI;
+package Chess_1VS1;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -43,7 +43,7 @@ public class Tile extends JPanel {
     public void setMoveSource() {
         if (piece.getType() != Type.PIECE && !clicked && piece.getSide() == Team.WHITE) {
             try {
-                canMoveto = ImageIO.read(new File("src/main/resources/greencircle.png"));
+                canMoveto = ImageIO.read(new File("main/resources/greencircle.png"));
                 rePaint();
                 clicked = true;
             } catch (IOException e) {
@@ -64,7 +64,7 @@ public class Tile extends JPanel {
     }
     public void setCanMoveto() {
         try {
-            canMoveto = ImageIO.read(new File("src/main/resources/greencircle.png"));
+            canMoveto = ImageIO.read(new File("main/resources/greencircle.png"));
             moveablePosition = true;
             rePaint();
         }

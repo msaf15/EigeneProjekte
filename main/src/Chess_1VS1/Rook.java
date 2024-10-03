@@ -5,27 +5,23 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Knight extends Piece {
-    Knight(Team side) {
+public class Rook extends Piece {
+    private final int[][] legalMoves = {
+            {1,0},
+            {-1,0},
+            {0,1},
+            {0,-1},
+    };
+    Rook(Team side) {
         super(side);
     }
-    private final int[][] legalMoves = {
-            { 2,  1},
-            { 2, -1},
-            {-2,  1},
-            {-2, -1},
-            { 1,  2},
-            { 1, -2},
-            {-1,  2},
-            {-1, -2},
-    };
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/knight.png"));
+                return ImageIO.read(new File("main/resources/rook.png"));
             else
-                return ImageIO.read(new File("src/main/resources/knight2.png"));
+                return ImageIO.read(new File("main/resources/rook2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -34,11 +30,12 @@ public class Knight extends Piece {
     }
 
     @Override
-    public Type getType() {
-        return Type.KNIGHT;
-    }
-    @Override
     public int[][] getLegalMoves() {
         return legalMoves;
+    }
+
+    @Override
+    public Type getType() {
+        return Type.ROOK;
     }
 }

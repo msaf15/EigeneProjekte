@@ -23,9 +23,9 @@ public class Knight extends Piece {
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/knight.png"));
+                return ImageIO.read(new File("main/resources/knight.png"));
             else
-                return ImageIO.read(new File("src/main/resources/knight2.png"));
+                return ImageIO.read(new File("main/resources/knight2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();

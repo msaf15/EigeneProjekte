@@ -18,9 +18,9 @@ public class Piece {
     public BufferedImage getImage() {
         try {
             if (side == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/pawn.png"));
+                return ImageIO.read(new File("main/resources/pawn.png"));
             else
-                return ImageIO.read(new File("src/main/resources/pawn2.png"));
+                return ImageIO.read(new File("main/resources/pawn2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();

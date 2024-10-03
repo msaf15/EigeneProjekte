@@ -5,23 +5,23 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Rook extends Piece {
+public class King extends Piece {
     private final int[][] legalMoves = {
-            {1,0},
-            {-1,0},
-            {0,1},
-            {0,-1},
+            {1,-1}, {-1,-1},
+            {1,1}, {-1,1},
+            {1,0}, {-1,0},
+            {0,1}, {0,-1},
     };
-    Rook(Team side) {
+    King(Team side) {
         super(side);
     }
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/rook.png"));
+                return ImageIO.read(new File("main/resources/king.png"));
             else
-                return ImageIO.read(new File("src/main/resources/rook2.png"));
+                return ImageIO.read(new File("main/resources/king2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -36,6 +36,6 @@ public class Rook extends Piece {
 
     @Override
     public Type getType() {
-        return Type.ROOK;
+        return Type.KING;
     }
 }

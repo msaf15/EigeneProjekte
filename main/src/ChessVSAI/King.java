@@ -1,29 +1,27 @@
-package Chess_1VS1;
+package ChessVSAI;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class Queen extends Piece {
+public class King extends Piece {
     private final int[][] legalMoves = {
             {1,-1}, {-1,-1},
             {1,1}, {-1,1},
-            {1,0},
-            {-1,0},
-            {0,1},
-            {0,-1},
+            {1,0}, {-1,0},
+            {0,1}, {0,-1},
     };
-    Queen(Team side) {
+    King(Team side) {
         super(side);
     }
     @Override
     public BufferedImage getImage() {
         try {
             if (this.getSide() == Team.BLACK)
-                return ImageIO.read(new File("src/main/resources/queen.png"));
+                return ImageIO.read(new File("main/resources/king.png"));
             else
-                return ImageIO.read(new File("src/main/resources/queen2.png"));
+                return ImageIO.read(new File("main/resources/king2.png"));
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -38,7 +36,6 @@ public class Queen extends Piece {
 
     @Override
     public Type getType() {
-        return Type.QUEEN;
+        return Type.KING;
     }
-
 }
