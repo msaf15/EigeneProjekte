@@ -36,5 +36,6 @@ public class ClientHandler extends Thread {
 
     public void sendMessage(String command) {
         out.println(command);
+        out.flush();
     }
 }

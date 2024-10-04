@@ -8,16 +8,15 @@ public class Parser {
     public static Map<Integer,Integer> rowMap = new HashMap<>();
     public static Map<Character,Integer> colMap = new HashMap<>();
     public static Map<Integer,Character> inverseMap = new HashMap<>();
-    public static Map<Character, Character> inverseCharacter = new HashMap<>();
     public static int[] fromCordToIndex(String input) {
-        rowMap.put(0, 7);
-        rowMap.put(1, 6);
-        rowMap.put(2, 5);
-        rowMap.put(3, 4);
-        rowMap.put(4, 3);
-        rowMap.put(5, 2);
-        rowMap.put(6, 1);
-        rowMap.put(7, 0);
+        rowMap.put(1, 7);
+        rowMap.put(2, 6);
+        rowMap.put(3, 5);
+        rowMap.put(4, 4);
+        rowMap.put(5, 3);
+        rowMap.put(6, 2);
+        rowMap.put(7, 1);
+        rowMap.put(8, 0);
 
         colMap.put('a',0);
         colMap.put('b',1);
@@ -30,12 +29,14 @@ public class Parser {
 
         char c = input.charAt(0);
         int num = Integer.parseInt(input.substring(1,2));
+        System.out.print(c);
+        System.out.print(num);
 
         int x1 = rowMap.get(num);
         int y1 = colMap.get(c);
         rowMap.clear();
         colMap.clear();
-        return new int[]{x1 + 1,y1};
+        return new int[]{x1,y1};
     }
     public static String fromIndextoCord(int[] source) {
         inverseMap.put(0, 'a');
@@ -73,7 +74,8 @@ public class Parser {
         rowMap.put(3,6);
         rowMap.put(2,7);
         rowMap.put(1,8);
-
-        return String.valueOf(source.charAt(0)) + rowMap.get(Integer.parseInt(source.substring(1, 2)));
+        String s = String.valueOf(source.charAt(0)) + rowMap.get(Integer.parseInt(source.substring(1, 2)));
+        rowMap.clear();
+        return s;
     }
 }

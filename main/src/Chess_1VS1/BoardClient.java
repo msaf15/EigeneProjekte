@@ -108,7 +108,9 @@ public class BoardClient extends JFrame {
                 String ans;
                 while ((ans = in.readLine()) != null) {
                     String source = ans.substring(0,2);
+                    System.out.println(source);
                     String dest = ans.substring(6,8);
+                    System.out.println(dest);
                     executeMove(source,dest);
                 }
             }
@@ -121,6 +123,7 @@ public class BoardClient extends JFrame {
 
     public void sendCommand(String source, String destination) {
         out.println(Parser.invertCords(source) + " to " + Parser.invertCords(destination));
+        out.flush();
     }
 
     private void setUpBottomSide() {
