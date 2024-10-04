@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class BoardClient extends JFrame {
     private final Tile[][] tiles = new Tile[8][8];
@@ -22,6 +21,7 @@ public class BoardClient extends JFrame {
     private PrintWriter out;
     private final Team team;
     private final Team enemyTeam;
+    private boolean turn;
     BoardClient(Team team) {
         super("Chess_1VS1");
         this.setSize(600, 600);
@@ -35,12 +35,12 @@ public class BoardClient extends JFrame {
         else
             enemyTeam = Team.WHITE;
         try {
-            socket = new Socket(InetAddress.getByName("192.168.0.10"), 6000);
+            socket = new Socket(InetAddress.getLocalHost(), 6000);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO-Exception: " + e.getMessage());
         }
         boolean swap = true;
         for (int i = 0; i < 8; i++) {
@@ -107,16 +107,30 @@ public class BoardClient extends JFrame {
         Thread thread = new Thread(() -> {
             try {
                 String ans;
+                String source;
+                String dest;
                 while ((ans = in.readLine()) != null) {
-                    String source = ans.substring(0,2);
-                    System.out.println(source);
-                    String dest = ans.substring(6,8);
-                    System.out.println(dest);
-                    executeMove(source,dest);
+                    if (ans.contains("turn on"))
+                        turn = true;
+                    if (ans.contains("to")) {
+                        source = ans.substring(0, 2);
+                        dest = ans.substring(6, 8);
+                        executeMove(source,dest);
+                    }
                 }
             }
             catch (IOException e) {
-                e.printStackTrace();
+                System.err.println("IO-Exception: " + e.getMessage());
+            }
+            finally {
+                try {
+                    socket.close();
+                    in.close();
+                    out.close();
+                }
+                catch (IOException e) {
+                    System.err.println("IO-Exception: " + e.getMessage());
+                }
             }
         });
         thread.start();
@@ -124,6 +138,11 @@ public class BoardClient extends JFrame {
 
     public void sendCommand(String source, String destination) {
         out.println(Parser.invertCords(source) + " to " + Parser.invertCords(destination));
+        out.flush();
+    }
+
+    public void sendCommand(String command) {
+        out.println(command);
         out.flush();
     }
 
@@ -277,19 +296,19 @@ public class BoardClient extends JFrame {
     public boolean validateMovesPawn(int[] legalMove, int targetY, int targetX, boolean friendly, Tile tile) {
         if ((legalMove[0] == -2 && !((Pawn) tile.getPiece()).isStart()) || checkIfAllyPiece(targetY, targetX))
             return false;
-        if ((legalMove[1] == -1 && !checkIfPieceOn(targetY, targetX)))
+        if ((legalMove[1] == -1 && checkIfPieceOn(targetY, targetX)))
             return false;
-        if ((legalMove[1] == 1 && !checkIfPieceOn(targetY, targetX)))
+        if ((legalMove[1] == 1 && checkIfPieceOn(targetY, targetX)))
             return false;
         if (legalMove[0] == -2 && legalMove[1] == 0 && friendly && ((Pawn) tile.getPiece()).isStart())
             return false;
-        return legalMove[0] != -1 || legalMove[1] != 0 || !checkIfPieceOn(targetY, targetX);
+        return legalMove[0] != -1 || legalMove[1] != 0 || checkIfPieceOn(targetY, targetX);
     }
 
     public boolean checkIfPieceOn(int targetY, int targetX) {
         if (BoardClient.checkWithinBounds(targetY,targetX))
-            return tiles[targetY][targetX].isPieceOn();
-        return false;
+            return !tiles[targetY][targetX].isPieceOn();
+        return true;
     }
 
     public boolean checkIfAllyPiece(int targetY, int targetX) {
@@ -329,9 +348,10 @@ public class BoardClient extends JFrame {
         }
         tiles[move.getDestY()][move.getDestX()].updateTile(move.getSourcePiece());
         tiles[move.getSourceY()][move.getSourceX()].removePiece();
-        System.out.println(getSourceCords(tiles[move.getSourceY()][move.getSourceX()]) + " to " + getSourceCords(tiles[move.getDestY()][move.getDestX()]));
         sendCommand(getSourceCords(tiles[move.getSourceY()][move.getSourceX()]), getSourceCords(tiles[move.getDestY()][move.getDestX()]));
         disableAllMoveIndicators();
+        turn = false;
+        sendCommand("turn on");
     }
 
     public void executeMove(String source, String dest) {
@@ -352,6 +372,8 @@ public class BoardClient extends JFrame {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            if (!turn)
+                return;
             Tile sourceTile = (Tile) e.getSource();
             if (!sourceTile.getPiece().isDead() && sourceTile.getPiece().getSide() == team && !sourceTile.isClicked()) {
                 if (checkActivations()) {

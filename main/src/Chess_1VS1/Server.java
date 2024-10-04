@@ -8,22 +8,35 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Server {
-    private ServerSocket serverSocket;
     private List<ClientHandler> clientHandlerList;
     public Server(int port) {
         clientHandlerList = new ArrayList<>();
-        try {
-            serverSocket = new ServerSocket(port);
+        try(ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Server running");
-            while (true) {
-                Socket socket = serverSocket.accept();
-                System.out.println("Client connected");
-                ClientHandler clientHandler = new ClientHandler(socket, this);
-                clientHandlerList.add(clientHandler);
-                clientHandler.start();
-            }
+            Socket p1 = serverSocket.accept();
+            System.out.println("p1 has connected");
+
+            Socket p2 = serverSocket.accept();
+            System.out.println("p2 has connected");
+
+            ClientHandler clientHandlerP1 = new ClientHandler(p1, this);
+            ClientHandler clientHandlerP2 = new ClientHandler(p2, this);
+            clientHandlerList.add(clientHandlerP1);
+            clientHandlerList.add(clientHandlerP2);
+            clientHandlerP1.start();
+            clientHandlerP2.start();
+            Random random = new Random();
+            int ranNum = random.nextInt(0,2);
+            PrintWriter outP1 = new PrintWriter(p1.getOutputStream(),true);
+            PrintWriter outP2 = new PrintWriter(p2.getOutputStream(),true);
+            if (ranNum == 0)
+                outP1.println("turn on");
+            else
+                outP2.println("turn on");
         }
         catch (IOException e) {
             e.printStackTrace();

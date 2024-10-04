@@ -29,8 +29,6 @@ public class Parser {
 
         char c = input.charAt(0);
         int num = Integer.parseInt(input.substring(1,2));
-        System.out.print(c);
-        System.out.print(num);
 
         int x1 = rowMap.get(num);
         int y1 = colMap.get(c);

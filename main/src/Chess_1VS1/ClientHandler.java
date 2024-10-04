@@ -18,7 +18,7 @@ public class ClientHandler extends Thread {
             this.out = new PrintWriter(socket.getOutputStream(), true);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO-Exception: " + e.getMessage());
         }
     }
     @Override
@@ -30,7 +30,16 @@ public class ClientHandler extends Thread {
             }
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("IO-Exception: " + e.getMessage());
+        }
+        finally {
+            try {
+                in.close();
+                out.close();
+            }
+            catch (IOException e) {
+                System.err.println("IO-Exception: " + e.getMessage());
+            }
         }
     }
 
