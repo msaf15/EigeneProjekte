@@ -35,7 +35,7 @@ public class BoardClient extends JFrame {
         else
             enemyTeam = Team.WHITE;
         try {
-            socket = new Socket(InetAddress.getLocalHost(), 6000);
+            socket = new Socket(InetAddress.getByName("192.168.0.10"), 6000);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
         }
