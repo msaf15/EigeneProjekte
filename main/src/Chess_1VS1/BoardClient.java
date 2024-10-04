@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public class BoardClient extends JFrame {
         else
             enemyTeam = Team.WHITE;
         try {
-            socket = new Socket("localhost", 6000);
+            socket = new Socket(InetAddress.getLocalHost(), 6000);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
         }
