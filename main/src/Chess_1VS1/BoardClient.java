@@ -110,6 +110,13 @@ public class BoardClient extends JFrame {
                 String source;
                 String dest;
                 while ((ans = in.readLine()) != null) {
+                    if (ans.contains("KING_NOT_ALLOWED")) {
+                        String cords = ans.substring(17);
+                        int[] index = Parser.fromCordToIndex(cords);
+                        tiles[index[0]][index[1]].setDangerzone(true);
+                    }
+                    if (ans.contains("check"))
+                        checkKingThreats();
                     if (ans.contains("turn on"))
                         turn = true;
                     if (ans.contains("to")) {
@@ -205,13 +212,6 @@ public class BoardClient extends JFrame {
         }
     }
 
-    private boolean isValidMoveTile(Tile tile) {
-        Piece piece = tile.getPiece();
-        boolean b1 = piece.isDead() && tile.isMoveablePosition();
-        boolean b2 = !piece.isDead() && tile.isMoveablePosition() && piece.getSide() == enemyTeam;
-        return (b1 || b2);
-    }
-
     public boolean checkActivations() {
         for (Tile[] row : tiles)
             for (Tile i : row)
@@ -227,7 +227,37 @@ public class BoardClient extends JFrame {
                     i.removeCircle();
     }
 
-    public <T extends Piece>void showAvailableMoves(Tile tile) {
+    public void checkKingThreats() {
+        for (Tile[] row : tiles) {
+            for (Tile t : row) {
+                if (t.isPieceOn() && t.getPiece().getSide() == team) {
+                    switch (t.getPiece().getType()) {
+                        case PAWN, KNIGHT, KING:
+                            showAvailableMoves(t, true);
+                            break;
+                        case BISHOP, ROOK, QUEEN:
+                            showAvailableMovesIntervall(t, true);
+                            break;
+                    }
+                    checkKing();
+                }
+            }
+        }
+        disableAllMoveIndicators();
+    }
+
+    private void checkKing() {
+        for (Tile[] row : tiles) {
+            for (Tile t : row) {
+                if (t.isPieceOn() && t.getPiece().getSide() == enemyTeam && t.getPiece().getType() == Chess_1VS1.Type.KING && t.isMoveablePosition()) {
+                    sendCommand("KING_NOT_ALLOWED " + Parser.fromIndextoCord(getSourceIndex(t)));
+                }
+            }
+        }
+    }
+
+
+    public <T extends Piece>void showAvailableMoves(Tile tile, boolean search) {
         @SuppressWarnings("unchecked")
         T t = (T) tile.getPiece();
         int[] sourceIndex = getSourceIndex(tile);
@@ -249,21 +279,15 @@ public class BoardClient extends JFrame {
                     continue;
             }
             if (BoardClient.checkWithinBounds(targetArr)) {
-                processMove(targetArr, tile);
+                if(!search)
+                    processMove(targetArr, tile);
+                else
+                    searchPos(targetArr);
             }
         }
     }
 
-    public static boolean checkWithinBounds(int[] source) {
-        return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
-    }
-
-    public static boolean checkWithinBounds(int y, int x) {
-        return y < 8 && y >= 0 && x < 8 && x >= 0;
-    }
-
-
-    public <T extends Piece>void showAvailableMovesIntervall(Tile tile) {
+    public <T extends Piece>void showAvailableMovesIntervall(Tile tile, boolean search) {
         @SuppressWarnings("unchecked")
         T t = (T) tile.getPiece();
         int[] sourceIndex = getSourceIndex(tile);
@@ -286,7 +310,10 @@ public class BoardClient extends JFrame {
                         break;
                     if (tiles[targetY][targetX].getPiece().getSide() == enemyTeam)
                         seenEnemyPiece = true;
-                    processMove(targetArr, tile);
+                    if(!search)
+                        processMove(targetArr, tile);
+                    else
+                        searchPos(targetArr);
                 }
             }
             targetY = sourceIndex[0];
@@ -295,6 +322,35 @@ public class BoardClient extends JFrame {
             seenFriendlyPiece = false;
         }
     }
+
+    public static boolean checkWithinBounds(int[] source) {
+        return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
+    }
+
+    public static boolean checkWithinBounds(int y, int x) {
+        return y < 8 && y >= 0 && x < 8 && x >= 0;
+    }
+
+    public int[] getSourceIndex(Tile tile) {
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+                if (tiles[i][j].equals(tile))
+                    return new int[]{i, j};
+        return new int[]{};
+    }
+
+    public String getSourceCords(Tile tile) {
+        int[] arr = getSourceIndex(tile);
+        return Parser.fromIndextoCord(arr);
+    }
+
+    private boolean isValidMoveTile(Tile tile) {
+        Piece piece = tile.getPiece();
+        boolean b1 = piece.isDead() && tile.isMoveablePosition();
+        boolean b2 = !piece.isDead() && tile.isMoveablePosition() && piece.getSide() == enemyTeam;
+        return (b1 || b2);
+    }
+
 
     public boolean validateMovesPawn(int[] legalMove, int targetY, int targetX, boolean friendly, Tile tile) {
         if ((legalMove[0] == -2 && !((Pawn) tile.getPiece()).isStart()) || checkIfAllyPiece(targetY, targetX))
@@ -321,23 +377,22 @@ public class BoardClient extends JFrame {
         return false;
     }
 
+
+
     public void processMove(int[] dest, Tile tile) {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         Tile destTile = tiles[dest[0]][dest[1]];
         destTile.setOwner(tile);
         destTile.setCanMoveto();
     }
 
-    public int[] getSourceIndex(Tile tile) {
-        for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++)
-                if (tiles[i][j].equals(tile))
-                    return new int[]{i, j};
-        return new int[]{};
-    }
-
-    public String getSourceCords(Tile tile) {
-        int[] arr = getSourceIndex(tile);
-        return Parser.fromIndextoCord(arr);
+    public void searchPos(int[] dest) {
+        Tile destTile = tiles[dest[0]][dest[1]];
+        destTile.setMoveablePosition();
     }
 
     public void executeMove(Move move) {
@@ -355,6 +410,7 @@ public class BoardClient extends JFrame {
         disableAllMoveIndicators();
         turn = false;
         sendCommand("turn on");
+        sendCommand("check");
     }
 
     public void executeMove(String source, String dest) {
@@ -386,10 +442,10 @@ public class BoardClient extends JFrame {
                 sourceTile.setMoveSource(team);
                 switch (sourceTile.getPiece().getType()) {
                     case PAWN, KNIGHT, KING:
-                        showAvailableMoves(tile);
+                        showAvailableMoves(tile,false);
                         break;
                     case BISHOP, ROOK, QUEEN:
-                        showAvailableMovesIntervall(tile);
+                        showAvailableMovesIntervall(tile,false);
                         break;
                 }
             }
