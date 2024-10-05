@@ -68,6 +68,9 @@ public class BoardClient extends JFrame {
         setUpTopSide();
         updateGameState();
         receiveCommands();
+        setKingZonesTeam();
+        setKingZonesEnemy();
+        sendCommand("check");
     }
 
     private void setUpTopSide() {
@@ -110,10 +113,13 @@ public class BoardClient extends JFrame {
                 String source;
                 String dest;
                 while ((ans = in.readLine()) != null) {
+                    if (ans.contains("ZONES")) {
+                        setKingZonesTeam();
+                        setKingZonesEnemy();
+                    }
                     if (ans.contains("KING_NOT_ALLOWED")) {
-                        String cord = ans.substring(17);
-                        System.out.println(cord);
-                        int[] des = Parser.fromCordToIndex(cord);
+                        String cord = ans.substring(16);
+                        int[] des = Parser.fromCordToIndex(Parser.invertCords(cord));
                         tiles[des[0]][des[1]].setAllowed(false);
                     }
                     if (ans.contains("check"))
@@ -228,6 +234,12 @@ public class BoardClient extends JFrame {
                     i.removeCircle();
     }
 
+    public void setNotMovable() {
+        for (Tile[] row : tiles)
+            for (Tile i : row)
+                i.setMoveablePositionFalse();
+    }
+
     public void checkKingThreats() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
@@ -244,20 +256,31 @@ public class BoardClient extends JFrame {
                 }
             }
         }
-        disableAllMoveIndicators();
+        setNotMovable();
     }
 
     private void checkKing() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
-                if (t.isKingzone()) {
-                    sendCommand("KING_NOT_ALLOWED " + Parser.fromIndextoCord(getSourceIndex(t)));
+                if (t.isKingzone() && t.getOwner().getPiece().getSide() == enemyTeam && t.isMoveablePosition()) {
+                    System.out.println("hi");
+                    sendCommand("KING_NOT_ALLOWED" + Parser.fromIndextoCord(getSourceIndex(t)));
                 }
             }
         }
-        disableAllMoveIndicators();
+        setNotMovable();
     }
 
+    public void disableKingZones() {
+        for (Tile[] row : tiles) {
+            for (Tile t : row) {
+                if (t.isKingzone()) {
+                    t.setKingzone(false);
+                    t.setOwner(null);
+                }
+            }
+        }
+    }
 
     public <T extends Piece>void showAvailableMoves(Tile tile, boolean search) {
         @SuppressWarnings("unchecked")
@@ -283,8 +306,9 @@ public class BoardClient extends JFrame {
             else if(t.getType() == Chess_1VS1.Type.KING) {
                 if (checkIfAllyPiece(targetY,targetX))
                     continue;
-                if (checkWithinBounds(targetY,targetX))
-                    tiles[targetY][targetX].setKingzone(true);
+                if (BoardClient.checkWithinBounds(targetY,targetX))
+                    if (!tiles[targetY][targetX].isAllowed())
+                        continue;
             }
 
             if (BoardClient.checkWithinBounds(targetArr)) {
@@ -416,6 +440,8 @@ public class BoardClient extends JFrame {
         disableAllMoveIndicators();
         turn = false;
         sendCommand("turn on");
+        sendCommand("ZONES");
+        checkKingThreats();
     }
 
     public void executeMove(String source, String dest) {
@@ -425,6 +451,55 @@ public class BoardClient extends JFrame {
         tiles[sourceIndex[0]][sourceIndex[1]].removePiece();
         tiles[destIndex[0]][destIndex[1]].updateTile(sourcePiece);
         disableAllMoveIndicators();
+    }
+
+    public void setKingZonesTeam() {
+        Tile kingTile = findKingTile(team);
+        King king = (King) kingTile.getPiece();
+        int[] sourceIndex = getSourceIndex(kingTile);
+        int[][] legalMoves = king.getLegalMoves();
+        disableKingZones();
+        for (int[] legalMove : legalMoves) {
+            int targetY = sourceIndex[0] + legalMove[0];
+            int targetX = sourceIndex[1] + legalMove[1];
+
+            int[] targetArr = {targetY, targetX};
+            if (checkIfAllyPiece(targetY,targetX))
+                continue;
+            if (BoardClient.checkWithinBounds(targetArr)) {
+                tiles[targetY][targetX].setKingzone(true);
+                tiles[targetY][targetX].setOwner(kingTile);
+            }
+        }
+    }
+
+    public void setKingZonesEnemy() {
+        Tile kingTile = findKingTile(enemyTeam);
+        King king = (King) kingTile.getPiece();
+        int[] sourceIndex = getSourceIndex(kingTile);
+        int[][] legalMoves = king.getLegalMoves();
+        disableKingZones();
+        for (int[] legalMove : legalMoves) {
+            int targetY = sourceIndex[0] + legalMove[0];
+            int targetX = sourceIndex[1] + legalMove[1];
+
+            int[] targetArr = {targetY, targetX};
+            if (BoardClient.checkWithinBounds(targetArr)) {
+                tiles[targetY][targetX].setKingzone(true);
+                tiles[targetY][targetX].setOwner(kingTile);
+            }
+        }
+    }
+
+    public Tile findKingTile(Team kingTeam) {
+        for (Tile[] row : tiles) {
+            for (Tile t : row) {
+                if (t.isPieceOn() && t.getPiece().getType() == Chess_1VS1.Type.KING && t.getPiece().getSide() == kingTeam) {
+                    return t;
+                }
+            }
+        }
+        return null;
     }
 
     private class TileMouseListener extends MouseAdapter {
@@ -446,15 +521,11 @@ public class BoardClient extends JFrame {
                 }
                 sourceTile.setMoveSource(team);
                 switch (sourceTile.getPiece().getType()) {
-                    case PAWN, KNIGHT:
+                    case PAWN, KNIGHT, KING:
                         showAvailableMoves(tile,false);
                         break;
                     case BISHOP, ROOK, QUEEN:
                         showAvailableMovesIntervall(tile,false);
-                        break;
-                    case KING:
-                        showAvailableMoves(tile,false);
-                        sendCommand("check");
                         break;
                 }
             }

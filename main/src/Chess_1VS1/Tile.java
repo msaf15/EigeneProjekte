@@ -16,7 +16,7 @@ public class Tile extends JPanel {
     private boolean moveablePosition = false;
     private boolean pieceOn = false;
     private boolean kingzone = false;
-    private boolean allowed = false;
+    private boolean allowed = true;
     public Tile() {
         this.piece = new Piece();
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
