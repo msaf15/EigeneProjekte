@@ -77,6 +77,15 @@ public class Tile extends JPanel {
         moveablePosition = false;
         rePaint();
     }
+
+    public void setMoveablePosition() {
+        moveablePosition = true;
+    }
+
+    public void setMoveablePositionFalse() {
+        moveablePosition = false;
+    }
+
     public boolean isClicked() {
         return clicked;
     }

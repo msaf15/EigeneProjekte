@@ -248,10 +248,12 @@ public class BoardClient extends JFrame {
                 if (checkIfAllyPiece(targetY,targetX))
                     continue;
             }
-            if (BoardClient.checkWithinBounds(targetArr))
+            if (BoardClient.checkWithinBounds(targetArr)) {
                 processMove(targetArr, tile);
+            }
         }
     }
+
     public static boolean checkWithinBounds(int[] source) {
         return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
     }
@@ -259,6 +261,7 @@ public class BoardClient extends JFrame {
     public static boolean checkWithinBounds(int y, int x) {
         return y < 8 && y >= 0 && x < 8 && x >= 0;
     }
+
 
     public <T extends Piece>void showAvailableMovesIntervall(Tile tile) {
         @SuppressWarnings("unchecked")
