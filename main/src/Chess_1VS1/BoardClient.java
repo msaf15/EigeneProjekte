@@ -111,9 +111,10 @@ public class BoardClient extends JFrame {
                 String dest;
                 while ((ans = in.readLine()) != null) {
                     if (ans.contains("KING_NOT_ALLOWED")) {
-                        String cords = ans.substring(17);
-                        int[] index = Parser.fromCordToIndex(cords);
-                        tiles[index[0]][index[1]].setDangerzone(true);
+                        String cord = ans.substring(17);
+                        System.out.println(cord);
+                        int[] des = Parser.fromCordToIndex(cord);
+                        tiles[des[0]][des[1]].setAllowed(false);
                     }
                     if (ans.contains("check"))
                         checkKingThreats();
@@ -249,11 +250,12 @@ public class BoardClient extends JFrame {
     private void checkKing() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
-                if (t.isPieceOn() && t.getPiece().getSide() == enemyTeam && t.getPiece().getType() == Chess_1VS1.Type.KING && t.isMoveablePosition()) {
+                if (t.isKingzone()) {
                     sendCommand("KING_NOT_ALLOWED " + Parser.fromIndextoCord(getSourceIndex(t)));
                 }
             }
         }
+        disableAllMoveIndicators();
     }
 
 
@@ -274,10 +276,17 @@ public class BoardClient extends JFrame {
                     continue;
                 }
             }
-            else if (t.getType() == Chess_1VS1.Type.KNIGHT || t.getType() == Chess_1VS1.Type.KING) {
+            else if (t.getType() == Chess_1VS1.Type.KNIGHT) {
                 if (checkIfAllyPiece(targetY,targetX))
                     continue;
             }
+            else if(t.getType() == Chess_1VS1.Type.KING) {
+                if (checkIfAllyPiece(targetY,targetX))
+                    continue;
+                if (checkWithinBounds(targetY,targetX))
+                    tiles[targetY][targetX].setKingzone(true);
+            }
+
             if (BoardClient.checkWithinBounds(targetArr)) {
                 if(!search)
                     processMove(targetArr, tile);
@@ -322,6 +331,8 @@ public class BoardClient extends JFrame {
             seenFriendlyPiece = false;
         }
     }
+
+
 
     public static boolean checkWithinBounds(int[] source) {
         return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
@@ -380,11 +391,6 @@ public class BoardClient extends JFrame {
 
 
     public void processMove(int[] dest, Tile tile) {
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         Tile destTile = tiles[dest[0]][dest[1]];
         destTile.setOwner(tile);
         destTile.setCanMoveto();
@@ -410,7 +416,6 @@ public class BoardClient extends JFrame {
         disableAllMoveIndicators();
         turn = false;
         sendCommand("turn on");
-        sendCommand("check");
     }
 
     public void executeMove(String source, String dest) {
@@ -441,11 +446,15 @@ public class BoardClient extends JFrame {
                 }
                 sourceTile.setMoveSource(team);
                 switch (sourceTile.getPiece().getType()) {
-                    case PAWN, KNIGHT, KING:
+                    case PAWN, KNIGHT:
                         showAvailableMoves(tile,false);
                         break;
                     case BISHOP, ROOK, QUEEN:
                         showAvailableMovesIntervall(tile,false);
+                        break;
+                    case KING:
+                        showAvailableMoves(tile,false);
+                        sendCommand("check");
                         break;
                 }
             }

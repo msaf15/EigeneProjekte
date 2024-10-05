@@ -15,7 +15,8 @@ public class Tile extends JPanel {
     private boolean clicked = false;
     private boolean moveablePosition = false;
     private boolean pieceOn = false;
-    private boolean dangerzone = false;
+    private boolean kingzone = false;
+    private boolean allowed = false;
     public Tile() {
         this.piece = new Piece();
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -121,11 +122,19 @@ public class Tile extends JPanel {
         this.pieceOn = pieceOn;
     }
 
-    public boolean isDangerzone() {
-        return dangerzone;
+    public boolean isKingzone() {
+        return kingzone;
     }
 
-    public void setDangerzone(boolean dangerzone) {
-        this.dangerzone = dangerzone;
+    public void setKingzone(boolean kingzone) {
+        this.kingzone = kingzone;
+    }
+
+    public boolean isAllowed() {
+        return allowed;
+    }
+
+    public void setAllowed(boolean allowed) {
+        this.allowed = allowed;
     }
 }
