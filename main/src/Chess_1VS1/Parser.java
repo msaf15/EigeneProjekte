@@ -9,11 +9,6 @@ public class Parser {
         char c = input.charAt(0);
         int num = Integer.parseInt(input.substring(1, 2));
 
-        System.out.println(input);
-        System.out.println("Parsed row (num): " + num);
-        System.out.println("Parsed column (char): " + c);
-        System.out.println(rowMap.size());
-        System.out.println(colMap.size());
         Integer x1 = rowMap.get(num);
         Integer y1 = colMap.get(c);
         return new int[]{x1, y1};

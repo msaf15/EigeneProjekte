@@ -419,7 +419,7 @@ public class BoardClient extends JFrame {
             return true;
         }
 
-        if (legalMove[0] == -1 && legalMove[1] == 0 && !search) {
+        if (legalMove[0] == -1 && legalMove[1] == 0) {
             if (checkIfPieceOn(targetY,targetX) || friendly)
                 return false;
             return true;
@@ -493,7 +493,7 @@ public class BoardClient extends JFrame {
             int targetX = sourceIndex[1] + legalMove[1];
 
             int[] targetArr = {targetY, targetX};
-            if (checkIfAllyPiece(targetY,targetX))
+            if (checkIfPieceOn(targetY,targetX))
                 continue;
             if (BoardClient.checkWithinBounds(targetArr)) {
                 tiles[targetY][targetX].setKingzone(true);
