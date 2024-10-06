@@ -16,6 +16,7 @@ public class Tile extends JPanel {
     private boolean moveablePosition = false;
     private boolean pieceOn = false;
     private boolean kingzone = false;
+    private boolean check = false;
     private boolean allowed = true;
     public Tile() {
         this.piece = new Piece();
@@ -136,5 +137,26 @@ public class Tile extends JPanel {
 
     public void setAllowed(boolean allowed) {
         this.allowed = allowed;
+    }
+
+    public boolean isCheck() {
+        return check;
+    }
+
+    public boolean hasOwner() {
+        return owner != null;
+    }
+
+    public void setCheck(boolean check) {
+        if (check) {
+            try {
+                canMoveto = ImageIO.read(new File("main/resources/redcircle.png"));
+                rePaint();
+            }
+            catch (IOException e) {
+                System.err.println("failed getting image");
+            }
+        }
+        this.check = check;
     }
 }

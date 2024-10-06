@@ -70,7 +70,6 @@ public class BoardClient extends JFrame {
         receiveCommands();
         setKingZonesTeam();
         setKingZonesEnemy();
-        sendCommand("check");
     }
 
     private void setUpTopSide() {
@@ -113,6 +112,10 @@ public class BoardClient extends JFrame {
                 String source;
                 String dest;
                 while ((ans = in.readLine()) != null) {
+                    if (ans.contains("check")) {
+                        Tile kingTile = findKingTile(team);
+                        kingTile.setCheck(true);
+                    }
                     if (ans.contains("ZONES")) {
                         setKingZonesTeam();
                         setKingZonesEnemy();
@@ -122,8 +125,8 @@ public class BoardClient extends JFrame {
                         int[] des = Parser.fromCordToIndex(Parser.invertCords(cord));
                         tiles[des[0]][des[1]].setAllowed(false);
                     }
-                    if (ans.contains("check"))
-                        checkKingThreats();
+                    if (ans.contains("mark"))
+                        markKingThreats();
                     if (ans.contains("turn on"))
                         turn = true;
                     if (ans.contains("to")) {
@@ -240,7 +243,7 @@ public class BoardClient extends JFrame {
                 i.setMoveablePositionFalse();
     }
 
-    public void checkKingThreats() {
+    public void markKingThreats() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
                 if (t.isPieceOn() && t.getPiece().getSide() == team) {
@@ -252,24 +255,33 @@ public class BoardClient extends JFrame {
                             showAvailableMovesIntervall(t, true);
                             break;
                     }
-                    checkKing();
+                    markKing();
                 }
             }
         }
         setNotMovable();
     }
 
-    private void checkKing() {
+    private void markKing() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
-                if (t.isKingzone() && t.getOwner().getPiece().getSide() == enemyTeam && t.isMoveablePosition()) {
-                    System.out.println("hi");
+                if (t.isKingzone() && t.hasOwner() && t.getOwner().getPiece().getSide() == enemyTeam && t.isMoveablePosition()) {
                     sendCommand("KING_NOT_ALLOWED" + Parser.fromIndextoCord(getSourceIndex(t)));
                 }
             }
         }
         setNotMovable();
     }
+
+    public void check() {
+        for (Tile[] row : tiles) {
+            for (Tile t : row) {
+                if (t.isPieceOn() && t.getPiece().getSide() == enemyTeam && t.getPiece().getType() == Chess_1VS1.Type.KING && t.isMoveablePosition())
+                    sendCommand("check");
+            }
+        }
+    }
+
 
     public void disableKingZones() {
         for (Tile[] row : tiles) {
@@ -295,7 +307,7 @@ public class BoardClient extends JFrame {
             if (t.getType() == Chess_1VS1.Type.PAWN) {
                 if (legalMove[0] == -1 && legalMove[1] == 0 && checkIfAllyPiece(targetY,targetX) && ((Pawn)t).isStart())
                     friendly = true;
-                if (!validateMovesPawn(legalMove, targetY, targetX, friendly, tile)) {
+                if (!validateMovesPawn(legalMove, targetY, targetX, friendly, tile, search)) {
                     continue;
                 }
             }
@@ -356,8 +368,6 @@ public class BoardClient extends JFrame {
         }
     }
 
-
-
     public static boolean checkWithinBounds(int[] source) {
         return source[0] < 8 && source[0] >= 0 && source[1] < 8 && source[1] >= 0;
     }
@@ -387,22 +397,40 @@ public class BoardClient extends JFrame {
     }
 
 
-    public boolean validateMovesPawn(int[] legalMove, int targetY, int targetX, boolean friendly, Tile tile) {
-        if ((legalMove[0] == -2 && !((Pawn) tile.getPiece()).isStart()) || checkIfAllyPiece(targetY, targetX))
-            return false;
-        if ((legalMove[1] == -1 && checkIfPieceOn(targetY, targetX)))
-            return false;
-        if ((legalMove[1] == 1 && checkIfPieceOn(targetY, targetX)))
-            return false;
-        if (legalMove[0] == -2 && legalMove[1] == 0 && friendly && ((Pawn) tile.getPiece()).isStart())
-            return false;
-        return legalMove[0] != -1 || legalMove[1] != 0 || checkIfPieceOn(targetY, targetX);
+    public boolean validateMovesPawn(int[] legalMove, int targetY, int targetX, boolean friendly, Tile tile, boolean search) {
+        Pawn pawn = (Pawn) tile.getPiece();
+        // check first diagonal
+        if (legalMove[0] == -1 && legalMove[1] == -1 && !search) {
+            if (!checkIfPieceOn(targetY,targetX) || checkIfAllyPiece(targetY,targetX))
+                return false;
+            return true;
+        }
+        // check second diagonal
+        if (legalMove[0] == -1 && legalMove[1] == 1 && !search) {
+            if (!checkIfPieceOn(targetY,targetX) || checkIfAllyPiece(targetY,targetX))
+                return false;
+            return true;
+        }
+
+        // check first move
+        if (legalMove[0] == -2) {
+            if (!pawn.isStart() || checkIfPieceOn(targetY,targetX) || friendly)
+                return false;
+            return true;
+        }
+
+        if (legalMove[0] == -1 && legalMove[1] == 0 && !search) {
+            if (checkIfPieceOn(targetY,targetX) || friendly)
+                return false;
+            return true;
+        }
+        return true;
     }
 
     public boolean checkIfPieceOn(int targetY, int targetX) {
         if (BoardClient.checkWithinBounds(targetY,targetX))
-            return !tiles[targetY][targetX].isPieceOn();
-        return true;
+            return tiles[targetY][targetX].isPieceOn();
+        return false;
     }
 
     public boolean checkIfAllyPiece(int targetY, int targetX) {
@@ -441,7 +469,8 @@ public class BoardClient extends JFrame {
         turn = false;
         sendCommand("turn on");
         sendCommand("ZONES");
-        checkKingThreats();
+        markKingThreats();
+        check();
     }
 
     public void executeMove(String source, String dest) {
