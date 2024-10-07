@@ -273,9 +273,8 @@ public class BoardClient extends JFrame {
     private void markKing() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
-                if (t.isKingzone() && t.hasOwner() && t.getOwner().getPiece().getSide() == enemyTeam && t.isMoveablePosition()) {
+                if (t.isKingzone() && t.hasOwner() && t.getOwner().getPiece().getSide() == enemyTeam && t.isMoveablePosition())
                     sendCommand("KING_NOT_ALLOWED" + Parser.fromIndextoCord(getSourceIndex(t)));
-                }
             }
         }
         setNotMovable();
@@ -315,9 +314,8 @@ public class BoardClient extends JFrame {
             if (t.getType() == Chess_1VS1.Type.PAWN) {
                 if (legalMove[0] == -1 && legalMove[1] == 0 && checkIfAllyPiece(targetY,targetX) && ((Pawn)t).isStart())
                     friendly = true;
-                if (!validateMovesPawn(legalMove, targetY, targetX, friendly, tile, search)) {
+                if (!validateMovesPawn(legalMove, targetY, targetX, friendly, tile, search))
                     continue;
-                }
             }
             else if (t.getType() == Chess_1VS1.Type.KNIGHT) {
                 if (checkIfAllyPiece(targetY,targetX))
@@ -478,6 +476,7 @@ public class BoardClient extends JFrame {
         sendCommand("turn on");
         sendCommand("ZONES");
         markKingThreats();
+        reAllow();
     }
 
     public void executeMove(String source, String dest) {
