@@ -112,6 +112,8 @@ public class BoardClient extends JFrame {
                 String source;
                 String dest;
                 while ((ans = in.readLine()) != null) {
+                    if(ans.contains("ALLOW"))
+                        reAllow();
                     if (ans.contains("check")) {
                         Tile kingTile = findKingTile(team);
                         kingTile.setCheck(true);
@@ -243,6 +245,12 @@ public class BoardClient extends JFrame {
                 i.setMoveablePositionFalse();
     }
 
+    public void reAllow() {
+        for (Tile[] row : tiles)
+            for (Tile i : row)
+                i.setAllowed(true);
+    }
+
     public void markKingThreats() {
         for (Tile[] row : tiles) {
             for (Tile t : row) {
@@ -351,7 +359,7 @@ public class BoardClient extends JFrame {
                     continue;
                 }
                 if (BoardClient.checkWithinBounds(targetArr)) {
-                    if (seenEnemyPiece || seenFriendlyPiece)
+                    if ( (seenEnemyPiece && !search) || seenFriendlyPiece)
                         break;
                     if (tiles[targetY][targetX].getPiece().getSide() == enemyTeam)
                         seenEnemyPiece = true;
@@ -470,7 +478,6 @@ public class BoardClient extends JFrame {
         sendCommand("turn on");
         sendCommand("ZONES");
         markKingThreats();
-        check();
     }
 
     public void executeMove(String source, String dest) {
@@ -513,6 +520,8 @@ public class BoardClient extends JFrame {
             int targetX = sourceIndex[1] + legalMove[1];
 
             int[] targetArr = {targetY, targetX};
+            if (checkIfPieceOn(targetY,targetX))
+                continue;
             if (BoardClient.checkWithinBounds(targetArr)) {
                 tiles[targetY][targetX].setKingzone(true);
                 tiles[targetY][targetX].setOwner(kingTile);

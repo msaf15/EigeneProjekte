@@ -33,10 +33,7 @@ public class Server {
             int ranNum = random.nextInt(0,2);
             PrintWriter outP1 = new PrintWriter(p1.getOutputStream(),true);
             PrintWriter outP2 = new PrintWriter(p2.getOutputStream(),true);
-            if (ranNum == 0)
-                outP1.println("turn on");
-            else
-                outP2.println("turn on");
+            outP1.println("turn on");
         }
         catch (IOException e) {
             e.printStackTrace();
